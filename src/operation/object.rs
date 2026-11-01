@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fmt, num::NonZeroU16};
+use std::{collections::BTreeMap, fmt, num::NonZeroU16, time::Duration};
 
 use http::HeaderMap;
 
@@ -61,6 +61,37 @@ impl PutObjectRequest {
             user_metadata: BTreeMap::new(),
             conditions: Conditions::default(),
             checksum_algorithm: None,
+            headers: HeaderMap::new(),
+        }
+    }
+
+    /// Replaces the request's additional headers.
+    pub fn with_headers(mut self, headers: HeaderMap) -> Self {
+        self.headers = headers;
+        self
+    }
+}
+
+/// Request to generate a presigned PUT URL.
+#[derive(Clone, derive_more::Debug)]
+pub struct PresignPutRequest {
+    /// Destination object key.
+    pub key: ObjectKey,
+    /// Lifetime of the generated URL.
+    pub expires: Duration,
+    /// Additional headers whose values are bound into the signature. Repeated
+    /// values are preserved. Signing- and transport-owned headers are rejected;
+    /// `content-length` is allowed when it is a single nonempty decimal value.
+    #[debug("{:?}", "<redacted>")]
+    pub headers: HeaderMap,
+}
+
+impl PresignPutRequest {
+    /// Constructs a request with no bound headers.
+    pub fn new(key: ObjectKey, expires: Duration) -> Self {
+        Self {
+            key,
+            expires,
             headers: HeaderMap::new(),
         }
     }
