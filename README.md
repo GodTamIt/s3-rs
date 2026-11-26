@@ -99,15 +99,12 @@ async fn get_with_headers(client: &S3Client) -> Result<(), Box<dyn std::error::E
 }
 ```
 
-For ordinary signed operations, a custom header cannot replace a header
-from a typed request field, and signing- or transport-owned headers such as
-`host`, `authorization`, `x-amz-date`, and `content-length` are rejected.
-Errors identify only the conflicting name. Header values may contain secrets:
-request `Debug` output redacts them, but applications remain responsible for
-direct access to or logging of the public map. For presigned PUTs, the
-request's `with_headers` map accepts a single decimal `content-length` and
-`presigned_put` returns a `PresignedRequest` pairing the URL with the headers
-the uploader must send.
+A custom header cannot replace a header generated from a typed request field,
+and signing- or transport-owned headers such as `host`, `authorization`,
+`x-amz-date`, and `content-length` are rejected. Errors identify only the
+conflicting name. Header values may contain secrets: request `Debug` output
+redacts them, but applications remain responsible for direct access to or
+logging of the public map.
 
 Run the complete CRUD, range, listing, and conditional-write example with:
 
@@ -265,12 +262,9 @@ async fn share_download(client: &S3Client) -> Result<(), Box<dyn std::error::Err
 fn send_to_authorized_caller(_url: &str) {}
 ```
 
-`presigned_put` takes a `PresignPutRequest` built with `new(key, expires)` and
-`with_headers`, following the other object request builders, and returns a
-`PresignedRequest` that binds the request's headers into the signature. Send
-the returned headers unchanged, together with the URL. Headers such as
-`content-type` and an exact `content-length` are accepted; signer- or
-transport-owned names are rejected:
+`presigned_put` signs the request's headers into the URL. Send the returned
+headers unchanged, together with the URL. Unlike ordinary requests, a single
+decimal `content-length` is accepted:
 
 ```rust,no_run
 use std::time::Duration;
@@ -301,11 +295,10 @@ async fn share_upload(client: &S3Client) -> Result<(), Box<dyn std::error::Error
 fn deliver_put(_method: &str, _url: &str, _headers: &HeaderMap) {}
 ```
 
-SigV4 matches signed headers after standard header normalization. A signed
-`content-type` declares the media type without validating the body bytes, and a
-signed `content-length` is an exact byte count rather than a maximum or range;
-the body itself remains `UNSIGNED-PAYLOAD`. `PresignedRequest` `Debug` output
-redacts the URL and the header values.
+A signed `content-type` does not validate the body bytes, and a signed
+`content-length` is an exact byte count rather than a maximum; the body itself
+remains `UNSIGNED-PAYLOAD`. `PresignedRequest` `Debug` output redacts the URL
+and the header values.
 
 Presigned URLs are bearer credentials. Keep their lifetime short and do not place exposed URLs in logs, analytics, or error messages.
 

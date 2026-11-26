@@ -6,19 +6,15 @@ This project records user-visible changes in this file and follows semantic vers
 
 ### Added
 
-- Root-exported `PresignPutRequest` with `new(key, expires)` and
-  `with_headers(http::HeaderMap)`, following the same request-model builder
-  style as the other operations. Caller-supplied headers such as
-  `content-type` and an exact `content-length` are signed into the presigned
-  PUT.
+- `PresignPutRequest` and `PresignedRequest`. Headers such as `content-type`
+  and an exact `content-length` can be signed into a presigned PUT.
 
 ### Changed
 
-- `S3Client::presigned_put` takes a `PresignPutRequest` instead of a key and
-  expiration pair and returns a `PresignedRequest` pairing the redacted URL
-  with the exact header map the uploader must send. Header-free requests
-  produce a host-only signature; migrate `presigned_put(&key, expires)` calls
-  to `presigned_put(PresignPutRequest::new(key, expires))`.
+- `S3Client::presigned_put` takes a `PresignPutRequest` and returns a
+  `PresignedRequest` holding the method, redacted URL, and the headers the
+  uploader must send. Migrate `presigned_put(&key, expires)` to
+  `presigned_put(PresignPutRequest::new(key, expires))`.
 
 ## [0.3.1] - 2026-09-10
 

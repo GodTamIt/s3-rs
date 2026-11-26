@@ -79,9 +79,9 @@ pub struct PresignPutRequest {
     pub key: ObjectKey,
     /// Lifetime of the generated URL.
     pub expires: Duration,
-    /// Additional headers whose values are bound into the signature. Repeated
-    /// values are preserved. Signing- and transport-owned headers are rejected;
-    /// `content-length` is allowed when it is a single nonempty decimal value.
+    /// Additional headers bound into the signature. Repeated values are preserved.
+    /// Signing- and transport-owned headers are rejected, except a single decimal
+    /// `content-length`.
     #[debug("{:?}", "<redacted>")]
     pub headers: HeaderMap,
 }

@@ -275,16 +275,13 @@ impl fmt::Display for PresignedUrl {
 
 /// A presigned request together with the headers bound into its signature.
 ///
-/// Send [`PresignedRequest::headers`] unchanged. Changing a bound header's
-/// canonical value invalidates the signature. `host` is signed from the URL's
-/// authority and is never part of the returned headers.
-///
-/// Header values are signing material, so `Debug` never renders the URL or
-/// header values.
-#[derive(Clone)]
+/// `host` is signed from the URL's authority and is not part of
+/// [`PresignedRequest::headers`]. `Debug` output redacts the URL and header values.
+#[derive(Clone, derive_more::Debug)]
 pub struct PresignedRequest {
     method: Method,
     url: PresignedUrl,
+    #[debug("{:?}", "<redacted>")]
     headers: HeaderMap,
 }
 
@@ -302,25 +299,14 @@ impl PresignedRequest {
         &self.method
     }
 
-    /// The presigned URL. Its query string is signing material.
+    /// The presigned URL.
     pub fn url(&self) -> &PresignedUrl {
         &self.url
     }
 
-    /// Headers that must accompany the request exactly as signed.
+    /// Headers the request must carry, unchanged, for the signature to verify.
     pub fn headers(&self) -> &HeaderMap {
         &self.headers
-    }
-}
-
-impl fmt::Debug for PresignedRequest {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter
-            .debug_struct("PresignedRequest")
-            .field("method", &self.method)
-            .field("url", &self.url)
-            .field("headers", &"[REDACTED]")
-            .finish()
     }
 }
 
